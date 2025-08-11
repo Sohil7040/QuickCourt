@@ -11,11 +11,16 @@ const Footer = () => {
           {/* Logo and Description */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <MapPin className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+                <img 
+                  src="./QuickCourt_logo.png" 
+                  alt="QuickCourt Logo" 
+                  className="w-8 h-8 object-contain"
+                />
               </div>
               <span className="text-xl font-bold">Quick Court</span>
             </div>
+
             <p className="text-gray-300 mb-6 max-w-md">
               Book sports facilities quickly and easily. Find the perfect court for your game, 
               whether it's tennis, badminton, basketball, or any other sport.

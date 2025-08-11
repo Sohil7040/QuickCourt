@@ -32,7 +32,11 @@ const Navbar = () => {
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <MapPin className="w-5 h-5 text-white" />
+                <img 
+                  src="./QuickCourt_logo.png" 
+                  alt="QuickCourt Logo" 
+                  className="w-8 h-8 object-contain"
+                />
               </div>
               <span className="text-xl font-bold text-gray-800">Quick Court</span>
             </Link>
