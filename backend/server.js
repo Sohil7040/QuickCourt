@@ -5,7 +5,6 @@ const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth');
 const venueRoutes = require('./routes/venues');
 const bookingRoutes = require('./routes/bookings');
-const userRoutes = require('./routes/users');
 
 dotenv.config();
 
@@ -20,6 +19,28 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/venues', venueRoutes);
 app.use('/api/bookings', bookingRoutes);
-app.use('/api/users', userRoutes);
 
 // MongoDB connection
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/quickcourt', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('MongoDB connected'))
+.catch(err => console.error('MongoDB connection error:', err));
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something went wrong!' });
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({ message: 'Route not found' });
+});
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
