@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useData } from '../contexts/DataContext';
+import { useData } from '../contexts/DataContext-enhanced';
 import { Search, Filter, MapPin, Star, Clock } from 'lucide-react';
 
 const VenuesPage: React.FC = () => {
@@ -123,7 +123,7 @@ const VenuesPage: React.FC = () => {
             >
               <div className="h-48 bg-gradient-to-r from-blue-400 to-blue-600 relative">
                 <img
-                  src={venue.photos[0]}
+                  src={venue.images?.[0] || '/placeholder-venue.jpg'}
                   alt={venue.name}
                   className="w-full h-full object-cover"
                 />
@@ -150,19 +150,13 @@ const VenuesPage: React.FC = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {venue.sports.slice(0, 3).map((sport) => (
+                  {venue.sportType ? (
                     <span
-                      key={sport}
                       className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium"
                     >
-                      {sport}
+                      {venue.sportType}
                     </span>
-                  ))}
-                  {venue.sports.length > 3 && (
-                    <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
-                      +{venue.sports.length - 3} more
-                    </span>
-                  )}
+                  ) : null}
                 </div>
 
                 <div className="flex items-center justify-between">

@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { venuesAPI, bookingsAPI } from '../services/api';
 
 interface Venue {
+  _id: string;
   id: string;
   name: string;
   description: string;
@@ -27,6 +29,7 @@ interface Court {
 }
 
 interface Booking {
+  _id: string;
   id: string;
   userId: string;
   venueId: string;
@@ -42,6 +45,10 @@ interface Booking {
 interface DataContextType {
   venues: Venue[];
   bookings: Booking[];
+  loading: boolean;
+  error: string | null;
+  fetchVenues: (filters?: any) => Promise<void>;
+  fetchBookings: () => Promise<void>;
   addVenue: (venue: Omit<Venue, 'id'>) => void;
   updateVenue: (id: string, updates: Partial<Venue>) => void;
   addBooking: (booking: Omit<Booking, 'id' | 'createdAt'>) => void;
@@ -62,83 +69,41 @@ export const useData = () => {
 };
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [venues, setVenues] = useState<Venue[]>([
-    {
-      id: '1',
-      name: 'Elite Sports Complex',
-      description: 'Premium sports facility with modern amenities and professional courts.',
-      address: '123 Sports Avenue, Downtown',
-      sports: ['Badminton', 'Tennis', 'Table Tennis'],
-      amenities: ['Parking', 'Changing Rooms', 'Refreshments', 'WiFi', 'AC'],
-      photos: [
-        'https://images.pexels.com/photos/209977/pexels-photo-209977.jpeg',
-        'https://images.pexels.com/photos/1263349/pexels-photo-1263349.jpeg'
-      ],
-      rating: 4.8,
-      pricePerHour: 50,
-      ownerId: '2',
-      status: 'approved',
-      courts: [
-        { id: 'c1', name: 'Court A1', sport: 'Badminton', pricePerHour: 45, operatingHours: { start: '06:00', end: '22:00' } },
-        { id: 'c2', name: 'Court A2', sport: 'Badminton', pricePerHour: 45, operatingHours: { start: '06:00', end: '22:00' } },
-        { id: 'c3', name: 'Tennis Court 1', sport: 'Tennis', pricePerHour: 60, operatingHours: { start: '07:00', end: '21:00' } },
-      ]
-    },
-    {
-      id: '2',
-      name: 'City Sports Hub',
-      description: 'Affordable sports facility perfect for casual and competitive play.',
-      address: '456 Main Street, Central City',
-      sports: ['Football', 'Cricket', 'Basketball'],
-      amenities: ['Parking', 'Changing Rooms', 'First Aid'],
-      photos: [
-        'https://images.pexels.com/photos/163452/basketball-dunk-blue-game-163452.jpeg',
-        'https://images.pexels.com/photos/274422/pexels-photo-274422.jpeg'
-      ],
-      rating: 4.2,
-      pricePerHour: 35,
-      ownerId: '2',
-      status: 'approved',
-      courts: [
-        { id: 'c4', name: 'Football Ground', sport: 'Football', pricePerHour: 80, operatingHours: { start: '06:00', end: '20:00' } },
-        { id: 'c5', name: 'Basketball Court', sport: 'Basketball', pricePerHour: 30, operatingHours: { start: '08:00', end: '22:00' } },
-      ]
-    },
-    {
-      id: '3',
-      name: 'Premium Racquet Club',
-      description: 'Exclusive club for racquet sports with top-notch facilities.',
-      address: '789 Elite Boulevard, Uptown',
-      sports: ['Tennis', 'Squash', 'Badminton'],
-      amenities: ['Valet Parking', 'Lounge', 'Pro Shop', 'Spa', 'Restaurant'],
-      photos: [
-        'https://images.pexels.com/photos/209977/pexels-photo-209977.jpeg'
-      ],
-      rating: 4.9,
-      pricePerHour: 100,
-      ownerId: '2',
-      status: 'approved',
-      courts: [
-        { id: 'c6', name: 'Premium Court 1', sport: 'Tennis', pricePerHour: 120, operatingHours: { start: '06:00', end: '22:00' } },
-        { id: 'c7', name: 'Squash Court A', sport: 'Squash', pricePerHour: 80, operatingHours: { start: '07:00', end: '21:00' } },
-      ]
-    }
-  ]);
+  const [venues, setVenues] = useState<Venue[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const [bookings, setBookings] = useState<Booking[]>([
-    {
-      id: '1',
-      userId: '1',
-      venueId: '1',
-      courtId: 'c1',
-      date: '2025-01-25',
-      startTime: '10:00',
-      endTime: '11:00',
-      totalPrice: 45,
-      status: 'confirmed',
-      createdAt: '2025-01-20T10:00:00Z'
+  // Fetch venues from the server
+  const fetchVenues = async (filters?: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await venuesAPI.getAllVenues(filters);
+      setVenues(response.data || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch venues');
+      setVenues([]);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  // Fetch bookings from the server
+  const fetchBookings = async () => {
+    try {
+      const response = await bookingsAPI.getMyBookings();
+      setBookings(response.data || []);
+    } catch (err) {
+      console.error('Failed to fetch bookings:', err);
+      setBookings([]);
+    }
+  };
+
+  // Load venues on component mount
+  useEffect(() => {
+    fetchVenues();
+  }, []);
 
   const addVenue = (venue: Omit<Venue, 'id'>) => {
     const newVenue = { ...venue, id: Date.now().toString() };
@@ -181,6 +146,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <DataContext.Provider value={{
       venues,
       bookings,
+      loading,
+      error,
+      fetchVenues,
+      fetchBookings,
       addVenue,
       updateVenue,
       addBooking,

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Venue, Booking, User, ApiResponse, FilterOptions } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -87,6 +88,16 @@ export const venuesAPI = {
     const response = await api.get('/venues/owner/my-venues');
     return response.data;
   },
+
+  checkUserBookingStatus: async (venueId: string) => {
+    const response = await api.get(`/venues/${venueId}/user-booking-status`);
+    return response.data;
+  },
+
+  getVenueAvailability: async (venueId: string, date: string) => {
+    const response = await api.get(`/venues/${venueId}/availability`, { params: { date } });
+    return response.data;
+  },
 };
 
 // Bookings API
@@ -113,6 +124,16 @@ export const bookingsAPI = {
 
   getVenueBookings: async (venueId: string) => {
     const response = await api.get(`/bookings/venue/${venueId}`);
+    return response.data;
+  },
+
+  checkUserBookingStatus: async (userId: string, venueId: string) => {
+    const response = await api.get(`/bookings/user/${userId}/venue/${venueId}/check`);
+    return response.data;
+  },
+
+  getUserUpcomingBookings: async (userId: string) => {
+    const response = await api.get(`/bookings/user/${userId}/upcoming`);
     return response.data;
   },
 };

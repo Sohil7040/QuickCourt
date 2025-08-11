@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useData } from '../contexts/DataContext';
+import { useData } from '../contexts/DataContext-enhanced';
 import { Search, MapPin, Clock, Star, Users, Calendar, Shield } from 'lucide-react';
 
 const HomePage: React.FC = () => {
@@ -128,11 +128,11 @@ const HomePage: React.FC = () => {
                 className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 overflow-hidden"
               >
                 <div className="h-48 bg-gradient-to-r from-blue-400 to-blue-600 relative">
-                  <img
-                    src={venue.photos[0]}
-                    alt={venue.name}
-                    className="w-full h-full object-cover"
-                  />
+            <img
+              src={venue.images?.[0] || '/placeholder-venue.jpg'}
+              alt={venue.name}
+              className="w-full h-full object-cover"
+            />
                   <div className="absolute top-4 right-4 bg-white rounded-full px-2 py-1 flex items-center space-x-1">
                     <Star className="w-4 h-4 text-yellow-500 fill-current" />
                     <span className="text-sm font-semibold">{venue.rating}</span>
@@ -147,14 +147,13 @@ const HomePage: React.FC = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-wrap gap-1">
-                      {venue.sports.slice(0, 2).map((sport) => (
-                        <span
-                          key={sport}
-                          className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs"
-                        >
-                          {sport}
-                        </span>
-                      ))}
+                    {venue.sportType ? (
+                      <span
+                        className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs"
+                      >
+                        {venue.sportType}
+                      </span>
+                    ) : null}
                     </div>
                     <span className="text-lg font-bold text-blue-600">${venue.pricePerHour}/hr</span>
                   </div>
