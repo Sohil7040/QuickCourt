@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { User } = require('../models');
+const { User } = require('../models/User');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'quickcourt_secret', {
@@ -62,4 +62,10 @@ const authorize = (...roles) => {
     }
     next();
   };
+};
+
+module.exports = {
+  generateToken,
+  auth,
+  authorize
 };

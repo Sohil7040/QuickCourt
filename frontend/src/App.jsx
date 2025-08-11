@@ -24,9 +24,6 @@ import BookingDetail from './pages/Bookings/BookingDetail';
 import Dashboard from './pages/Dashboard/Dashboard';
 import NotFound from './pages/NotFound';
 
-// Styles
-import './App.css';
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

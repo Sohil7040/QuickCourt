@@ -1,9 +1,15 @@
-// src/pages/Dashboard/Dashboard.js
+// src/pages/Dashboard/Dashboard.jsx
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import axios from 'axios';
+import { useQuery } from 'react-query';
 
-const Dashboard = () => {
+function Dashboard() {
   const { user } = useAuth();
+  const { data: myBookingsData } = useQuery('dashboard_myBookings', async () => {
+    const res = await axios.get('/api/bookings/my?upcoming=true&limit=1');
+    return res.data.data.pagination?.total || 0;
+  });
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
@@ -12,20 +18,23 @@ const Dashboard = () => {
         <div className="bg-white shadow rounded-lg p-6">
           <p className="text-gray-500 text-sm">Welcome</p>
           <p className="text-gray-900 font-semibold">{user?.name || 'User'}</p>
-          <p className="text-gray-500 text-sm mt-1">Role: {user?.role || 'user'}</p>
+          <p className="text-gray-500 text-sm mt-1">
+            Role: {user?.role || 'user'}
+          </p>
         </div>
+
         <div className="bg-white shadow rounded-lg p-6">
           <p className="text-gray-500 text-sm">Facilities Managed</p>
           <p className="text-3xl font-bold text-gray-900">—</p>
         </div>
+
         <div className="bg-white shadow rounded-lg p-6">
           <p className="text-gray-500 text-sm">Upcoming Bookings</p>
-          <p className="text-3xl font-bold text-gray-900">—</p>
+          <p className="text-3xl font-bold text-gray-900">{myBookingsData ?? '—'}</p>
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default Dashboard;
-

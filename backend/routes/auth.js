@@ -1,7 +1,7 @@
 const express = require('express');
 const validator = require('validator');
-const { User } = require('../models');
-const auth = require('../middleware/auth');
+const User = require('../models/User');
+const {auth , authorize , generateToken} = require('../middleware/auth');
 const router = express.Router();
 
 // @desc    Register user
@@ -312,4 +312,4 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-module.exports = { router, auth, authorize, generateToken };
+module.exports = router;

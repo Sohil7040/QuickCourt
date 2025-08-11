@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const reviewSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.ObjectId,
@@ -56,9 +57,4 @@ reviewSchema.index({ user: 1, booking: 1 }, { unique: true });
 
 const Review = mongoose.model('Review', reviewSchema);
 
-module.exports = {
-  User,
-  Facility,
-  Booking,
-  Review
-};
+module.exports = Review;

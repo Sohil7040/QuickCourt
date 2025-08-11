@@ -1,5 +1,5 @@
 const express = require('express');
-const { auth } = require('./auth');
+const { auth } = require('../middleware/auth');
 const router = express.Router();
 
 // NOTE: Placeholder payments routes. Integrate with a real provider (e.g., Stripe) later.

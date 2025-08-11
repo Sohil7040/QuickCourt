@@ -1,7 +1,9 @@
 // routes/bookings.js
 const express = require('express');
-const { Booking, Facility, User } = require('../models');
-const { auth, authorize } = require('./auth');
+const Booking = require('../models/Booking');
+const Facility = require('../models/Facility');
+const User = require('../models/User');
+const { auth, authorize } = require('../middleware/auth');
 const router = express.Router();
 
 // @desc    Create new booking

@@ -1,6 +1,8 @@
 const express = require('express');
-const { Facility, Booking, Review } = require('../models');
-const { auth, authorize } = require('./auth');
+const Facility = require('../models/Facility');
+const Booking = require('../models/Booking');
+const Review = require('../models/Review');
+const { auth, authorize } = require('../middleware/auth');
 const router = express.Router();
 
 // @desc    Get all facilities with filters

@@ -5,6 +5,9 @@ import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
+axios.defaults.baseURL = 'http://localhost:5000';
+
+
 const authReducer = (state, action) => {
   switch (action.type) {
     case 'AUTH_START':
@@ -121,7 +124,8 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: 'AUTH_START' });
       
-      const response = await axios.post('/api/auth/register', userData);
+      const response = await axios.post('http://localhost:5000/api/auth/register', userData);
+      console.log(response.data);
       const { user, token } = response.data.data;
       
       localStorage.setItem('token', token);
@@ -134,7 +138,7 @@ export const AuthProvider = ({ children }) => {
       toast.success('Registration successful!');
       return { success: true };
     } catch (error) {
-      const message = error.response?.data?.message || 'Registration failed';
+      const message = error.response?.data?.message || 'Registration failed rasul';
       dispatch({ type: 'AUTH_ERROR', payload: message });
       toast.error(message);
       return { success: false, message };

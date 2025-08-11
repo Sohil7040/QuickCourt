@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const facilitySchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.ObjectId,
@@ -172,3 +173,4 @@ facilitySchema.virtual('bookings', {
 });
 
 const Facility = mongoose.model('Facility', facilitySchema);
+module.exports = Facility;

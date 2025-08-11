@@ -1,6 +1,6 @@
 const express = require('express');
-const { auth, authorize } = require('./auth');
-const { User } = require('../models');
+const { auth, authorize } = require('../middleware/auth');
+const User = require('../models/User');
 const router = express.Router();
 
 // @desc    Get all users (admin only)
@@ -125,4 +125,3 @@ router.delete('/:id', auth, authorize('admin'), async (req, res) => {
 });
 
 module.exports = router;
-
