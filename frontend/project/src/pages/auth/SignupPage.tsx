@@ -57,14 +57,35 @@ const SignupPage: React.FC = () => {
 
     setIsLoading(true);
 
-    const success = await signup(formData);
-    
-    if (success) {
+    try {
+      const success = await signup(formData);
+      
+      if (success) {
+        // Redirect based on user role
+        const userRole = formData.role;
+        let redirectPath = '/';
+        
+        switch (userRole) {
+          case 'user':
+            redirectPath = '/user/dashboard';
+            break;
+          case 'owner':
+            redirectPath = '/owner/dashboard';
+            break;
+          case 'admin':
+            redirectPath = '/admin/dashboard';
+            break;
+          default:
+            redirectPath = '/';
+        }
+        
+        navigate(redirectPath, { replace: true });
+      }
+    } catch (error) {
+      console.error('Signup failed:', error);
+    } finally {
       setIsLoading(false);
-      navigate('/');
     }
-    
-    
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
