@@ -1,16 +1,75 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useData } from '../contexts/DataContext';
+import { useData } from '../contexts/DataContext-enhanced';
 import { useAuth } from '../contexts/AuthContext';
 import { Star, MapPin, Clock, Wifi, Car, Users, Shield, Calendar, ArrowLeft } from 'lucide-react';
 
+interface Court {
+  id: string;
+  name: string;
+  sport: string;
+  pricePerHour: number;
+  operatingHours: {
+    start: string;
+    end: string;
+  };
+}
+
+interface Venue {
+  _id: string;
+  id: string;
+  name: string;
+  description: string;
+  address: string;
+  images: string[];
+  photos?: string[];
+  pricePerHour: number;
+  sportType: string;
+  amenities: string[];
+  rating: number;
+  courts?: Court[];
+}
+
 const VenueDetailsPage: React.FC = () => {
   const { id } = useParams();
-  const { getVenueById } = useData();
+  const { fetchVenueById } = useData();
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   
-  const venue = getVenueById(id!);
+  const [venue, setVenue] = useState<Venue | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadVenue = async () => {
+      if (id) {
+        const venueData = await fetchVenueById(id);
+        if (venueData) {
+          setVenue(venueData);
+        } else {
+          // Try to find venue in local storage or fetch from venues list
+          const venues = JSON.parse(localStorage.getItem('venues') || '[]');
+          const foundVenue = venues.find((v: any) => v._id === id || v.id === id);
+          if (foundVenue) {
+            setVenue(foundVenue);
+          } else {
+            console.error('Venue not found:', id);
+          }
+        }
+        setLoading(false);
+      }
+    };
+    loadVenue();
+  }, [id, fetchVenueById]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Loading venue...</h2>
+        </div>
+      </div>
+    );
+  }
 
   if (!venue) {
     return (
@@ -71,7 +130,7 @@ const VenueDetailsPage: React.FC = () => {
             {/* Images */}
             <div className="relative h-64 lg:h-96">
               <img
-                src={venue.photos[0]}
+                src={venue.images?.[0] || '/placeholder-venue.jpg'}
                 alt={venue.name}
                 className="w-full h-full object-cover"
               />
@@ -124,15 +183,14 @@ const VenueDetailsPage: React.FC = () => {
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Sports Available</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {venue.sports.map((sport) => (
+                {venue.sportType ? (
                   <div
-                    key={sport}
                     className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center"
                   >
                     <div className="text-2xl mb-2">🏸</div>
-                    <h3 className="font-semibold text-gray-900">{sport}</h3>
+                    <h3 className="font-semibold text-gray-900">{venue.sportType}</h3>
                   </div>
-                ))}
+                ) : null}
               </div>
             </div>
 
@@ -140,29 +198,33 @@ const VenueDetailsPage: React.FC = () => {
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Available Courts</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {venue.courts.map((court) => (
-                  <div
-                    key={court.id}
-                    className="border border-gray-200 rounded-lg p-4"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900">{court.name}</h3>
-                      <span className="text-lg font-bold text-blue-600">
-                        ${court.pricePerHour}/hr
-                      </span>
+                {venue.courts && venue.courts.length > 0 ? (
+                  venue.courts.map((court) => (
+                    <div
+                      key={court.id}
+                      className="border border-gray-200 rounded-lg p-4"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-semibold text-gray-900">{court.name}</h3>
+                        <span className="text-lg font-bold text-blue-600">
+                          ${court.pricePerHour}/hr
+                        </span>
+                      </div>
+                      <p className="text-gray-600 text-sm mb-2">{court.sport}</p>
+                      <div className="flex items-center space-x-2 text-sm text-gray-500">
+                        <Clock className="w-4 h-4" />
+                        <span>{court.operatingHours.start} - {court.operatingHours.end}</span>
+                      </div>
                     </div>
-                    <p className="text-gray-600 text-sm mb-2">{court.sport}</p>
-                    <div className="flex items-center space-x-2 text-sm text-gray-500">
-                      <Clock className="w-4 h-4" />
-                      <span>{court.operatingHours.start} - {court.operatingHours.end}</span>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-gray-500 col-span-2">No courts available</p>
+                )}
               </div>
             </div>
 
             {/* Gallery */}
-            {venue.photos.length > 1 && (
+            {venue.photos && venue.photos.length > 1 && (
               <div className="bg-white rounded-xl shadow-lg p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Photo Gallery</h2>
                 <div className="grid grid-cols-2 gap-4">

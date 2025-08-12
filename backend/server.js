@@ -3,7 +3,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth');
-const venueRoutes = require('./routes/venues');
+const venueRoutes = require('./routes/venues-enhanced');
 const bookingRoutes = require('./routes/bookings');
 
 dotenv.config();

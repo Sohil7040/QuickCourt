@@ -83,4 +83,58 @@ router.put('/:id/cancel', auth, async (req, res) => {
   }
 });
 
+// Check if user has bookings for a specific venue
+router.get('/user/:userId/venue/:venueId/check', auth, async (req, res) => {
+  try {
+    const { userId, venueId } = req.params;
+    
+    // Verify the user is checking their own bookings
+    if (userId !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to check bookings for this user' });
+    }
+
+    const existingBookings = await Booking.find({
+      user: userId,
+      venue: venueId,
+      status: { $in: ['pending', 'confirmed'] },
+      bookingDate: { $gte: new Date() }
+    }).sort({ bookingDate: 1 });
+
+    res.json({
+      success: true,
+      hasBookings: existingBookings.length > 0,
+      bookings: existingBookings
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get user's upcoming bookings for all venues
+router.get('/user/:userId/upcoming', auth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    if (userId !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to view bookings for this user' });
+    }
+
+    const bookings = await Booking.find({
+      user: userId,
+      bookingDate: { $gte: new Date() },
+      status: { $in: ['pending', 'confirmed'] }
+    })
+    .populate('venue', 'name address images pricePerHour sportType')
+    .sort({ bookingDate: 1 });
+
+    res.json({
+      success: true,
+      count: bookings.length,
+      data: bookings
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;
