@@ -47,10 +47,21 @@ const VenueList: React.FC<VenueListProps> = ({ limit, showFilters = true }) => {
 
       const response = await venuesAPI.getAllVenues(filters);
       
-      if (response.success) {
+      if (response.success && response.data) {
         setVenues(response.data);
-        setTotalVenues(response.count || response.data.length);
-        setTotalPages(Math.ceil((response.count || response.data.length) / (limit || 12)));
+        console.log('Venues fetched successfully:', response.data);
+        setTotalVenues(response.pagination?.total || response.data.length);
+        setTotalPages(Math.ceil((response.pagination?.total || response.data.length) / (limit || 12)));
+      } else if (Array.isArray(response)) {
+        // Legacy format - direct array
+        setVenues(response);
+        console.log('Legacy venues format fetched:', response);
+        setTotalVenues(response.length);
+        setTotalPages(Math.ceil(response.length / (limit || 12)));
+      } else {
+        setVenues([]);
+        setTotalVenues(0);
+        setTotalPages(1);
       }
     } catch (err) {
       setError('Failed to load venues. Please try again.');
@@ -235,7 +246,7 @@ const VenueList: React.FC<VenueListProps> = ({ limit, showFilters = true }) => {
 
 // Venue Card Component
 const VenueCard: React.FC<{ venue: Venue }> = ({ venue }) => {
-  const imageUrl = venue.images?.[0] || '/placeholder-venue.jpg';
+  const imageUrl = venue.photos?.[0] || '/placeholder-venue.jpg';
   
   return (
     <Link to={`/venues/${venue._id}`} className="block">
@@ -262,7 +273,7 @@ const VenueCard: React.FC<{ venue: Venue }> = ({ venue }) => {
           </p>
           
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-500">{venue.sportType}</span>
+            <span className="text-sm text-gray-500">{venue.sports?.[0] || 'Sports'}</span>
             <div className="flex items-center">
               <Star className="w-4 h-4 text-yellow-400 mr-1" />
               <span className="text-sm">{venue.rating || 0}</span>
@@ -275,7 +286,7 @@ const VenueCard: React.FC<{ venue: Venue }> = ({ venue }) => {
             </span>
             <span className="text-sm text-gray-500">
               <Users className="w-4 h-4 inline mr-1" />
-              {venue.capacity || 'N/A'}
+              {venue.courts?.length || 0} courts
             </span>
           </div>
         </div>

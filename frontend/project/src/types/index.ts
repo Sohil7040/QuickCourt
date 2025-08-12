@@ -6,27 +6,40 @@ export interface User {
   avatar?: string;
 }
 
-export interface Venue {
+export interface Court {
   _id: string;
   name: string;
-  description: string;
-  sportType: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  pricePerHour: number;
+  courtNumber: number;
+  type: string;
   capacity: number;
+  isAvailable: boolean;
+  pricePerHour: number;
+  features: string[];
   images: string[];
-  amenities: string[];
-  availability: {
-    [key: string]: {
-      startTime: string;
-      endTime: string;
-      isAvailable: boolean;
-    };
+  venue: string;
+  createdAt: string;
+}
+
+export interface Venue {
+  _id: string;
+  id: string;
+  name: string;
+  description: string;
+  address: string;
+  location: {
+    type: string;
+    coordinates: [number, number];
   };
-  owner: User;
+  photos: string[];
+  pricePerHour: number;
+  sports: string[];
+  amenities: string[];
+  owner: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  courts: Court[];
   status: 'pending' | 'approved' | 'rejected';
   rating: number;
   totalBookings: number;

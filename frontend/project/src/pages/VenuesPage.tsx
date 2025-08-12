@@ -117,8 +117,8 @@ const VenuesPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredVenues.map((venue) => (
             <Link
-              key={venue.id}
-              to={`/venues/${venue.id}`}
+              key={venue._id}
+              to={`/venues/${venue._id}`}
               className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 overflow-hidden"
             >
               <div className="h-48 bg-gradient-to-r from-blue-400 to-blue-600 relative">
@@ -149,15 +149,16 @@ const VenuesPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {venue.sportType ? (
-                    <span
-                      className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium"
-                    >
-                      {venue.sportType}
-                    </span>
-                  ) : null}
-                </div>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {venue.sports?.map((sport) => (
+                  <span
+                    key={sport}
+                    className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium"
+                  >
+                    {sport}
+                  </span>
+                ))}
+              </div>
 
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold text-blue-600">

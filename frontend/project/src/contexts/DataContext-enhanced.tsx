@@ -71,24 +71,65 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchVenues = async (filters?: any) => {
+  const fetchVenues = async () => {
     setLoading(true);
     setError(null);
+
     try {
-      const response = await venuesAPI.getAllVenues(filters);
-      setVenues(response.data || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch venues');
+      const res = await venuesAPI.getAllVenues();
+      // ✅ Safe parsing: check if res.data exists
+      if (res?.data && Array.isArray(res.data)) {
+        setVenues(res.data);
+      } else if (res?.data?.venues && Array.isArray(res.data.venues)) {
+        setVenues(res.data.venues);
+      } else {
+        console.warn("Unexpected venues response:", res);
+        setError("Invalid data format received from server.");
+        setVenues([]);
+      }
+    } catch (err: any) {
+      console.error("Fetch venues error:", err);
+
+      if (err.response) {
+        // Server responded with a status outside 2xx
+        console.error("Error data:", err.response.data);
+        console.error("Error status:", err.response.status);
+        console.error("Error headers:", err.response.headers);
+        setError(
+          err.response.data?.message ||
+            `Server error: ${err.response.status}`
+        );
+      } else if (err.request) {
+        // No response from server
+        console.error("No response received:", err.request);
+        setError("No response from server. Please check your connection.");
+      } else {
+        // Other errors
+        console.error("Request setup error:", err.message);
+        setError("Unexpected error occurred.");
+      }
+
       setVenues([]);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchVenues();
+  }, []);
+
   const fetchVenueById = async (id: string) => {
     try {
       const response = await venuesAPI.getVenueById(id);
-      return response.data || null;
+      // Handle both response.data and response.data.data formats
+      if (response?.data) {
+        return response.data;
+      } else if (response?.data?.data) {
+        return response.data.data;
+      } else {
+        return response || null;
+      }
     } catch (err) {
       console.error('Failed to fetch venue:', err);
       return null;

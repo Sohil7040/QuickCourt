@@ -4,6 +4,16 @@ const { auth, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Helper function to safely convert to string
+const safeToString = (value) => {
+  return value?.toString() || '';
+};
+
+// Helper function to handle null/undefined values
+const safeValue = (value, defaultValue = '') => {
+  return value || defaultValue;
+};
+
 // Get all venues with enhanced filtering
 router.get('/', async (req, res) => {
   try {
@@ -31,7 +41,7 @@ router.get('/', async (req, res) => {
     
     // Sport type filter
     if (sportType && sportType !== 'all') {
-      query.sportType = sportType;
+      query.sports = { $in: [sportType] };
     }
     
     // Price range filter
@@ -64,6 +74,7 @@ router.get('/', async (req, res) => {
     const skip = (page - 1) * limit;
     const venues = await Venue.find(query)
       .populate('owner', 'name email')
+      .populate('courts')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(Number(limit));
@@ -81,17 +92,25 @@ router.get('/', async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching venues:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch venues',
+      error: error.message 
+    });
   }
 });
 
 // Get single venue
 router.get('/:id', async (req, res) => {
   try {
-    const venue = await Venue.findById(req.params.id).populate('owner', 'name email phone');
-    
+    const venue = await Venue.findOne({ _id: req.params.id }); // Using custom 'id'
+
     if (!venue) {
-      return res.status(404).json({ message: 'Venue not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Venue not found' 
+      });
     }
 
     res.json({
@@ -99,9 +118,14 @@ router.get('/:id', async (req, res) => {
       data: venue
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch venue',
+      error: error.message 
+    });
   }
 });
+
 
 // Get venue availability
 router.get('/:id/availability', async (req, res) => {
@@ -110,7 +134,10 @@ router.get('/:id/availability', async (req, res) => {
     const venue = await Venue.findById(req.params.id);
     
     if (!venue) {
-      return res.status(404).json({ message: 'Venue not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Venue not found' 
+      });
     }
     
     // Get existing bookings for this date
@@ -130,7 +157,12 @@ router.get('/:id/availability', async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching venue availability:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch venue availability',
+      error: error.message 
+    });
   }
 });
 
@@ -149,7 +181,12 @@ router.post('/', auth, authorize('owner'), async (req, res) => {
       data: venue
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error creating venue:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to create venue',
+      error: error.message 
+    });
   }
 });
 
@@ -159,11 +196,28 @@ router.put('/:id', auth, async (req, res) => {
     const venue = await Venue.findById(req.params.id);
     
     if (!venue) {
-      return res.status(404).json({ message: 'Venue not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Venue not found' 
+      });
     }
 
-    if (venue.owner.toString() !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Not authorized to update this venue' });
+    // Safe check for owner comparison
+    const venueOwnerId = venue.owner?.toString();
+    const requestingUserId = req.user?.id?.toString();
+    
+    if (!venueOwnerId || !requestingUserId) {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Unable to verify ownership' 
+      });
+    }
+
+    if (venueOwnerId !== requestingUserId && req.user.role !== 'admin') {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Not authorized to update this venue' 
+      });
     }
 
     const updatedVenue = await Venue.findByIdAndUpdate(
@@ -177,7 +231,12 @@ router.put('/:id', auth, async (req, res) => {
       data: updatedVenue
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error updating venue:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to update venue',
+      error: error.message 
+    });
   }
 });
 
@@ -187,11 +246,28 @@ router.delete('/:id', auth, async (req, res) => {
     const venue = await Venue.findById(req.params.id);
     
     if (!venue) {
-      return res.status(404).json({ message: 'Venue not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Venue not found' 
+      });
     }
 
-    if (venue.owner.toString() !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Not authorized to delete this venue' });
+    // Safe check for owner comparison
+    const venueOwnerId = venue.owner?.toString();
+    const requestingUserId = req.user?.id?.toString();
+    
+    if (!venueOwnerId || !requestingUserId) {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Unable to verify ownership' 
+      });
+    }
+
+    if (venueOwnerId !== requestingUserId && req.user.role !== 'admin') {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Not authorized to delete this venue' 
+      });
     }
 
     await Venue.findByIdAndDelete(req.params.id);
@@ -201,7 +277,12 @@ router.delete('/:id', auth, async (req, res) => {
       message: 'Venue deleted successfully'
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error deleting venue:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to delete venue',
+      error: error.message 
+    });
   }
 });
 
@@ -216,7 +297,12 @@ router.get('/owner/my-venues', auth, async (req, res) => {
       data: venues
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching owner venues:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch venues',
+      error: error.message 
+    });
   }
 });
 
@@ -226,6 +312,7 @@ router.get('/:id/user-booking-status', auth, async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
     
+    const Booking = require('../models/Booking');
     const bookings = await Booking.find({
       venue: id,
       user: userId,
@@ -242,7 +329,12 @@ router.get('/:id/user-booking-status', auth, async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error checking booking status:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to check booking status',
+      error: error.message 
+    });
   }
 });
 

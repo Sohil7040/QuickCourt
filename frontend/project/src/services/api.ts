@@ -39,102 +39,188 @@ api.interceptors.response.use(
   }
 );
 
+// Helper function to handle API errors
+const handleApiError = (error: any, defaultMessage: string) => {
+  if (error.response?.data?.message) {
+    return error.response.data.message;
+  }
+  if (error.response?.data?.error) {
+    return error.response.data.error;
+  }
+  if (error.message) {
+    return error.message;
+  }
+  return defaultMessage;
+};
+
 // Auth API
 export const authAPI = {
   login: async (email: string, password: string) => {
-    const response = await api.post('/auth/login', { email, password });
-    return response.data;
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Login failed. Please check your credentials.'));
+    }
   },
 
   register: async (userData: any) => {
-    const response = await api.post('/auth/register', userData);
-    return response.data;
+    try {
+      const response = await api.post('/auth/register', userData);
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Registration failed. Please try again.'));
+    }
   },
 
   getCurrentUser: async () => {
-    const response = await api.get('/auth/me');
-    return response.data;
+    try {
+      const response = await api.get('/auth/me');
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to fetch user data.'));
+    }
   },
 };
 
 // Venues API
 export const venuesAPI = {
   getAllVenues: async (filters?: any) => {
-    const response = await api.get('/venues', { params: filters });
-    return response.data;
+    try {
+      const response = await api.get('/venues', { params: filters });
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to fetch venues.'));
+    }
   },
 
   getVenueById: async (id: string) => {
-    const response = await api.get(`/venues/${id}`);
-    return response.data;
+    try {
+      const response = await api.get(`/venues/${id}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to fetch venue details.'));
+    }
   },
 
   createVenue: async (venueData: any) => {
-    const response = await api.post('/venues', venueData);
-    return response.data;
+    try {
+      const response = await api.post('/venues', venueData);
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to create venue.'));
+    }
   },
 
   updateVenue: async (id: string, venueData: any) => {
-    const response = await api.put(`/venues/${id}`, venueData);
-    return response.data;
+    try {
+      const response = await api.put(`/venues/${id}`, venueData);
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to update venue.'));
+    }
   },
 
   deleteVenue: async (id: string) => {
-    const response = await api.delete(`/venues/${id}`);
-    return response.data;
+    try {
+      const response = await api.delete(`/venues/${id}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to delete venue.'));
+    }
   },
 
   getMyVenues: async () => {
-    const response = await api.get('/venues/owner/my-venues');
-    return response.data;
+    try {
+      const response = await api.get('/venues/owner/my-venues');
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to fetch your venues.'));
+    }
   },
 
   checkUserBookingStatus: async (venueId: string) => {
-    const response = await api.get(`/venues/${venueId}/user-booking-status`);
-    return response.data;
+    try {
+      const response = await api.get(`/venues/${venueId}/user-booking-status`);
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to check booking status.'));
+    }
   },
 
   getVenueAvailability: async (venueId: string, date: string) => {
-    const response = await api.get(`/venues/${venueId}/availability`, { params: { date } });
-    return response.data;
+    try {
+      const response = await api.get(`/venues/${venueId}/availability`, { params: { date } });
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to fetch venue availability.'));
+    }
   },
 };
 
 // Bookings API
 export const bookingsAPI = {
   createBooking: async (bookingData: any) => {
-    const response = await api.post('/bookings', bookingData);
-    return response.data;
+    try {
+      const response = await api.post('/bookings', bookingData);
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to create booking.'));
+    }
   },
 
   getMyBookings: async () => {
-    const response = await api.get('/bookings/my-bookings');
-    return response.data;
+    try {
+      const response = await api.get('/bookings/my-bookings');
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to fetch bookings.'));
+    }
   },
 
   getBookingById: async (id: string) => {
-    const response = await api.get(`/bookings/${id}`);
-    return response.data;
+    try {
+      const response = await api.get(`/bookings/${id}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to fetch booking details.'));
+    }
   },
 
   cancelBooking: async (id: string) => {
-    const response = await api.put(`/bookings/${id}/cancel`);
-    return response.data;
+    try {
+      const response = await api.put(`/bookings/${id}/cancel`);
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to cancel booking.'));
+    }
   },
 
   getVenueBookings: async (venueId: string) => {
-    const response = await api.get(`/bookings/venue/${venueId}`);
-    return response.data;
+    try {
+      const response = await api.get(`/bookings/venue/${venueId}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to fetch venue bookings.'));
+    }
   },
 
   checkUserBookingStatus: async (userId: string, venueId: string) => {
-    const response = await api.get(`/bookings/user/${userId}/venue/${venueId}/check`);
-    return response.data;
+    try {
+      const response = await api.get(`/bookings/user/${userId}/venue/${venueId}/check`);
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to check booking status.'));
+    }
   },
 
   getUserUpcomingBookings: async (userId: string) => {
-    const response = await api.get(`/bookings/user/${userId}/upcoming`);
-    return response.data;
+    try {
+      const response = await api.get(`/bookings/user/${userId}/upcoming`);
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to fetch upcoming bookings.'));
+    }
   },
 };
 

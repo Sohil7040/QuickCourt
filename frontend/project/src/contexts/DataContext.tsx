@@ -1,46 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { venuesAPI, bookingsAPI } from '../services/api';
-
-interface Venue {
-  _id: string;
-  id: string;
-  name: string;
-  description: string;
-  address: string;
-  sports: string[];
-  amenities: string[];
-  photos: string[];
-  rating: number;
-  pricePerHour: number;
-  ownerId: string;
-  status: 'pending' | 'approved' | 'rejected';
-  courts: Court[];
-}
-
-interface Court {
-  id: string;
-  name: string;
-  sport: string;
-  pricePerHour: number;
-  operatingHours: {
-    start: string;
-    end: string;
-  };
-}
-
-interface Booking {
-  _id: string;
-  id: string;
-  userId: string;
-  venueId: string;
-  courtId: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  totalPrice: number;
-  status: 'confirmed' | 'cancelled' | 'completed';
-  createdAt: string;
-}
+import { Venue, Booking } from '../types';
 
 interface DataContextType {
   venues: Venue[];
@@ -81,6 +41,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await venuesAPI.getAllVenues(filters);
       setVenues(response.data || []);
+      console.log('Venues fetched:', response.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch venues');
       setVenues([]);
@@ -134,11 +95,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const getVenueById = (id: string) => venues.find(venue => venue.id === id);
 
   const getBookingsByUserId = (userId: string) => 
-    bookings.filter(booking => booking.userId === userId);
+    bookings.filter(booking => booking.user?._id === userId);
 
   const getBookingsByOwnerId = (ownerId: string) => 
     bookings.filter(booking => {
-      const venue = venues.find(v => v.id === booking.venueId);
+      const venue = venues.find(v => v.id === booking.venue?._id);
       return venue?.ownerId === ownerId;
     });
 

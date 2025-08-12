@@ -25,7 +25,7 @@ const venueSchema = new mongoose.Schema({
       required: true
     }
   },
-  images: [{
+  photos: [{
     type: String
   }],
   pricePerHour: {
@@ -33,11 +33,10 @@ const venueSchema = new mongoose.Schema({
     required: true,
     min: 0
   },
-  sportType: {
+  sports: [{
     type: String,
-    required: true,
     enum: ['basketball', 'tennis', 'football', 'badminton', 'volleyball', 'cricket', 'other']
-  },
+  }],
   amenities: [{
     type: String
   }],
@@ -46,17 +45,9 @@ const venueSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  availability: [{
-    day: {
-      type: String,
-      enum: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-    },
-    startTime: String,
-    endTime: String,
-    isAvailable: {
-      type: Boolean,
-      default: true
-    }
+  courts: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Court'
   }],
   status: {
     type: String,
@@ -78,6 +69,20 @@ const venueSchema = new mongoose.Schema({
     default: Date.now
   }
 });
+
+// Virtual for id field (matches _id)
+venueSchema.virtual('id').get(function() {
+  return this._id?.toString() || '';
+});
+
+// Virtual for ownerId field (matches owner)
+venueSchema.virtual('ownerId').get(function() {
+  return this.owner?.toString() || '';
+});
+
+// Ensure virtual fields are serialized
+venueSchema.set('toJSON', { virtuals: true });
+venueSchema.set('toObject', { virtuals: true });
 
 venueSchema.index({ location: '2dsphere' });
 
